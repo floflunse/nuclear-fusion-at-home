@@ -1,0 +1,35 @@
+name: repro-source-export
+
+on:
+  push:
+    branches: ["repro-source-export"]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          repository: DrWorkhard/nuclear-fusion-at-home
+          ref: eb53e6c9df58af2b84e7e8492e06bb3e7e0885a0
+          path: source
+          persist-credentials: false
+          fetch-depth: 1
+          fetch-tags: false
+      - name: Record exact source revision
+        shell: bash
+        run: |
+          git -C source rev-parse HEAD > SOURCE_SHA.txt
+          test "$(cat SOURCE_SHA.txt)" = "eb53e6c9df58af2b84e7e8492e06bb3e7e0885a0"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-eb53
+          path: |
+            source
+            SOURCE_SHA.txt
+          include-hidden-files: true
+          if-no-files-found: error
